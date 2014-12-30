@@ -17,7 +17,7 @@ class ViewController: UIViewController {
     
     var titleLabel: UILabel!
     
-    //Information Labels
+    // Information Labels
     
     var creditsLabel: UILabel!
     var betLabel: UILabel!
@@ -26,12 +26,20 @@ class ViewController: UIViewController {
     var winnerPaidLabel: UILabel!
     var winnerPaidTitleLabel: UILabel!
     
-    //Buttons in fourth container
+    // Buttons in fourth container
     
     var resetButton: UIButton!
     var betOneButton: UIButton!
     var betMaxButton: UIButton!
     var spinButton: UIButton!
+    
+    var slots:[[Slot]] = []
+    
+    // Stats
+    
+    var credits = 0
+    var currentBet = 0
+    var winnings = 0
     
     let kMarginForView:CGFloat = 10.0
     let kMarginForSlot:CGFloat = 2.0
@@ -48,9 +56,11 @@ class ViewController: UIViewController {
         // Do any additional setup after loading the view, typically from a nib.
         setupContainerViews()
         setupFirstContainer(self.firstContainer)
-        setupSecondContainer(self.secondContainer)
         setupThirdContainer(self.thirdContainer)
         setupFourthContainer(self.fourthContainer)
+        
+        hardReset()
+        
     }
 
     override func didReceiveMemoryWarning() {
@@ -61,7 +71,7 @@ class ViewController: UIViewController {
     //IBActions
     
     func resetButtonPressed (button: UIButton) {
-        println("resetButtonPressed")
+        hardReset()
     }
     
     func betOneButtonPressed (button: UIButton) {
@@ -73,6 +83,9 @@ class ViewController: UIViewController {
     }
     
     func spinButtonPressed (button: UIButton) {
+        removeSlotImageViews()
+        slots = Factory.createSlots()
+        setupSecondContainer(self.secondContainer)
         
     }
     
@@ -109,7 +122,18 @@ class ViewController: UIViewController {
             
             for var slotNumber = 0; slotNumber < kNumberOfSlots; ++slotNumber {
                 
+                var slot:Slot
                 var slotImageView = UIImageView()
+                
+                if slots.count != 0 {
+                    let slotContainer = slots[containerNumber]
+                    slot = slotContainer[slotNumber]
+                    slotImageView.image = slot.image
+                }
+                else {
+                    slotImageView.image = UIImage(named: "Ace")
+                }
+                
                 slotImageView.backgroundColor = UIColor.yellowColor()
                 slotImageView.frame = CGRect(x: containerView.bounds.origin.x + (containerView.bounds.size.width * CGFloat(containerNumber) * kThird), y: containerView.bounds.origin.y + (containerView.bounds.size.height * CGFloat(slotNumber) * kThird), width: containerView.bounds.width * kThird - kMarginForSlot, height: containerView.bounds.height * kThird - kMarginForSlot)
                 containerView.addSubview(slotImageView)
@@ -217,8 +241,48 @@ class ViewController: UIViewController {
         self.spinButton.addTarget(self, action: "spinButtonPressed:", forControlEvents: UIControlEvents.TouchUpInside)
         containerView.addSubview(self.spinButton)
         
-        
         }
+    
+    func removeSlotImageViews () {
+        if self.secondContainer != nil {
+            let container: UIView? = self.secondContainer
+            let subViews:Array? = container!.subviews
+            for view in subViews! {
+                view.removeFromSuperview()
+            }
+            
+        }
+    }
+    
+    func hardReset() {
+        removeSlotImageViews()
+        slots.removeAll(keepCapacity: true)
+        self.setupSecondContainer(self.secondContainer)
+        credits = 50
+        winnings = 0
+        currentBet = 0
+        
+        updateMainView()
+    }
+    
+    func updateMainView () {
+        self.creditsLabel.text = "\(credits)"
+        self.betLabel.text = "\(currentBet)"
+        self.winnerPaidLabel.text = "\(winnings)"
+    }
+    
+    func showAlertWithText (header : String = "Warning", message : String) {
+        
+        var alert = UIAlertController(title: header, message: message, preferredStyle: UIAlertControllerStyle.Alert)
+        alert.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.Default, handler: nil))
+        self.presentViewController(alert, animated: true, completion: nil)
+    }
+    
+    
+    
+    
+    
+    
     
     
     
